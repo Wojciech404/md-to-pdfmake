@@ -127,6 +127,7 @@ describe('Transform objects', () => {
       },
     ]);
   });
+  
 
   it('should translate a strong text to a bold text object', () => {
     expect(toPdfMakeObject('**Hello** World')).toEqual([
@@ -135,11 +136,26 @@ describe('Transform objects', () => {
     expect(toPdfMakeObject('**Hello World**')).toEqual([
       { text: [{ text: 'Hello World', bold: true }] },
     ]);
+    expect(toPdfMakeObject('Hello **World**')).toEqual([
+      { text: [{ text: 'Hello ' }, { text: 'World', bold: true }] },
+    ]);
   });
 
   it('should translate a italic text to a italics text object', () => {
     expect(toPdfMakeObject('*Hello World*')).toEqual([
       { text: [{ text: 'Hello World', italics: true }] },
+    ]);
+  });
+
+  it('should translate a italic text to a italics text object in the header', () => {
+    expect(toPdfMakeObject('# **Hello** World')).toEqual([
+      { text: [{ text: 'Hello', bold: true }, { text: ' World' }] },
+    ]);
+    expect(toPdfMakeObject('# **Hello World**')).toEqual([
+      { text: [{ text: 'Hello World', bold: true }] },
+    ]);
+    expect(toPdfMakeObject('# Hello **World**')).toEqual([
+      { text: [{ text: 'Hello ' }, { text: 'World', bold: true }] },
     ]);
   });
 

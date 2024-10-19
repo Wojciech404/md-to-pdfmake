@@ -10,7 +10,7 @@ import {
   ContentText,
   ContentUnorderedList,
 } from 'pdfmake/interfaces';
-import { Style } from './types';
+import { FontStyle, Style } from './types';
 
 export const toPdfMakeObject = (md: string, style: Style = {}): Content[] => {
   function buildText(text: string | null, options = {}): ContentText {
@@ -93,8 +93,8 @@ export const toPdfMakeObject = (md: string, style: Style = {}): Content[] => {
       ...style.a
     });
   }
-
-  function buildParagraph(element: Element): ContentText | Content[] {
+  
+  function buildBlock(element: Element, styles?: FontStyle): ContentText | Content[] {
     if (element.childElementCount) {
       return {
         text: Array.from(element.childNodes).map(element => {
@@ -104,34 +104,14 @@ export const toPdfMakeObject = (md: string, style: Style = {}): Content[] => {
 
           return buildContent(<Element>element);
         }),
-        ...(style.p || {}),
+        ...(styles || {}),
       };
     }
-    return buildText(element.textContent, style.p || {});
+    return buildText(element.textContent, styles || {});
   }
-
-  function buildH1(element: Element): ContentText {
-    return buildText(element.textContent, style.h1 || {});
-  }
-
-  function buildH2(element: Element): ContentText {
-    return buildText(element.textContent, style.h2 || {});
-  }
-
-  function buildH3(element: Element): ContentText {
-    return buildText(element.textContent, style.h3 || {});
-  }
-
-  function buildH4(element: Element): ContentText {
-    return buildText(element.textContent, style.h4 || {});
-  }
-
-  function buildH5(element: Element): ContentText {
-    return buildText(element.textContent, style.h5 || {});
-  }
-
-  function buildH6(element: Element): ContentText {
-    return buildText(element.textContent, style.h6 || {});
+  
+  function buildBlockFactory(styles?: FontStyle): (element: Element) => ContentText | Content[] {
+    return (element: Element): ContentText | Content[] => buildBlock(element, styles);
   }
 
   function buildListItem(element: Element): ContentText | Content[] {
@@ -164,16 +144,16 @@ export const toPdfMakeObject = (md: string, style: Style = {}): Content[] => {
       [key: string]: (element: Element) => Content | Content[];
     } = {
       A: buildAnchor,
-      P: buildParagraph,
+      P: buildBlockFactory(style.p),
       UL: buildUnorderedList,
       LI: buildListItem,
       OL: buildOrderedList,
-      H1: buildH1,
-      H2: buildH2,
-      H3: buildH3,
-      H4: buildH4,
-      H5: buildH5,
-      H6: buildH6,
+      H1: buildBlockFactory(style.h1),
+      H2: buildBlockFactory(style.h2),
+      H3: buildBlockFactory(style.h3),
+      H4: buildBlockFactory(style.h4),
+      H5: buildBlockFactory(style.h5),
+      H6: buildBlockFactory(style.h6),
       STRONG: buildBold,
       EM: buildItalics,
     };
